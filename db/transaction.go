@@ -28,19 +28,19 @@ func (receiver TransactionDB) Create(transaction model.Transaction) error {
 }
 
 func (receiver TransactionDB) GetAll(id string) ([]model.Transaction, error) {
-	var types []model.TransactionType
+	var types []model.Transaction
 
-	res, err := receiver.DB.Query("SELECT * FROM account_transaction WHERE sender_id = ?;")
-	if err != nil {
-		return nil, err
-	}
-
-	for res.Next() {
-		var result model.TransactionType
-		if err := res.Scan(&result.ID, &result.Type); err != nil {
-			return nil, err
-		}
-		types = append(types, result)
-	}
+	//res, err := receiver.DB.Query("SELECT * FROM account_transaction WHERE sender_id = ?;")
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//for res.Next() {
+	//	var result model.TransactionType
+	//	if err := res.Scan(&result.ID, &result.Type); err != nil {
+	//		return nil, err
+	//	}
+	//	types = append(types, result)
+	//}
 	return types, nil
 }
