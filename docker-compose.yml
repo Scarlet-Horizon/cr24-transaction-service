@@ -1,31 +1,15 @@
 version: "3.9"
 
 services:
-  db:
-    build:
-      context: .
-      dockerfile: dockerfile-db
-    ports:
-      - "3306:3306"
-    volumes:
-      - ${HOME}/db/:/var/lib/mysql
-    networks:
-      - sipia_rv1_4
-    env_file: .env-db
-    container_name: transaction-db-con
-    hostname: transaction-db
-    restart: on-failure
-
   api:
+#    image: davidslatinek/transaction-api:0.2
     build:
       context: .
       dockerfile: dockerfile-api
     ports:
       - "8085:8085"
-    depends_on:
-      - db
     networks:
-      - tr
+      - sipia_rv1_4
     container_name: transaction-api-con
     hostname: transaction-api
     restart: on-failure
