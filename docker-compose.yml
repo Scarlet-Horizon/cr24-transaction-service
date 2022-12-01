@@ -13,7 +13,21 @@ services:
       - tr
     env_file: .env-db
     container_name: transaction-db-con
-    hostname: db
+    hostname: transaction-db
+    restart: on-failure
+
+  api:
+    build:
+      context: .
+      dockerfile: dockerfile-api
+    ports:
+      - "8085:8085"
+    depends_on:
+      - db
+    networks:
+      - tr
+    container_name: transaction-api-con
+    hostname: transaction-api
     restart: on-failure
 
 networks:
