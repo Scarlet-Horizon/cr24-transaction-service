@@ -7,9 +7,7 @@ import (
 )
 
 func (receiver TransactionDB) GetTypes() ([]model.TransactionType, error) {
-	var query = "SELECT * FROM transaction_type;"
-
-	stmt, err := receiver.DB.Prepare(query)
+	stmt, err := receiver.DB.Prepare("SELECT * FROM transaction_type;")
 	if err != nil {
 		return nil, err
 	}
@@ -19,7 +17,7 @@ func (receiver TransactionDB) GetTypes() ([]model.TransactionType, error) {
 		}
 	}(stmt)
 
-	rows, err := receiver.DB.Query(query)
+	rows, err := stmt.Query()
 	if err != nil {
 		return nil, err
 	}
