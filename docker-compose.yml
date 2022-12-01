@@ -31,5 +31,6 @@ services:
     restart: on-failure
 
 networks:
-  tr:
+  sipia_rv1_4:
+    name: sipia_rv1_4
     driver: bridge
