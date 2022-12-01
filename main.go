@@ -6,9 +6,12 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
+	swaggerFiles "github.com/swaggo/files"
+	"github.com/swaggo/gin-swagger"
 	"log"
 	"main/controller"
 	"main/db"
+	_ "main/docs"
 	"main/env"
 	"net/http"
 	"os"
@@ -17,6 +20,23 @@ import (
 	"time"
 )
 
+//	@title			cr24 Transaction API
+//	@version		1.0
+//	@description	API for transaction management for cr24 project
+//	@termsOfService	http://swagger.io/terms/
+
+//	@contact.name	David Slatinek
+//	@contact.url	https://github.com/david-slatinek
+
+//	@accept		json
+//	@produce	json
+//	@schemes	http
+
+//	@license.name	GNU General Public License v3.0
+//	@license.url	https://www.gnu.org/licenses/gpl-3.0.html
+
+// @host		localhost:8085
+// @BasePath	/api/v1
 func main() {
 	err := env.Load("env/.env")
 	if err != nil {
@@ -61,6 +81,7 @@ func main() {
 	{
 		api.POST("/transaction", transactionController.Create)
 	}
+	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	srv := &http.Server{
 		Addr:         ":8085",

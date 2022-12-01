@@ -16,6 +16,16 @@ type TransactionController struct {
 	DB *db.TransactionDB
 }
 
+//	@description	Create new transaction.
+//	@summary		Create new transaction
+//	@accept			json
+//	@produce		json
+//	@tags			transaction
+//	@param			requestBody	body		request.TransactionRequest	true	"Transaction data"
+//	@success		201			{object}	model.Transaction
+//	@failure		400			{object}	response.ErrorResponse
+//	@failure		500			{object}	response.ErrorResponse
+//	@router			/transaction [POST]
 func (receiver TransactionController) Create(context *gin.Context) {
 	var req request.TransactionRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
