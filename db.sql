@@ -10,7 +10,7 @@ CREATE TABLE account_transaction (
     sender_id VARCHAR(255) NOT NULL,
     recipient_id VARCHAR(255) NOT NULL,
     amount DECIMAL(10, 2) NOT NULL,
-    t_date DATE NOT NUll,
+    t_date DATETIME NOT NUll,
     fk_t_type INT UNSIGNED NOT NULL
 );
 

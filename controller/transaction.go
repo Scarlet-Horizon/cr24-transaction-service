@@ -69,3 +69,24 @@ func (receiver TransactionController) Create(context *gin.Context) {
 	}
 	context.JSON(http.StatusCreated, tr)
 }
+
+func (receiver TransactionController) GetAll(context *gin.Context) {
+	accountID := context.Param("accountID")
+
+	if !util.IsValidUUID(accountID) {
+		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: "invalid account id"})
+		return
+	}
+
+	res, err := receiver.DB.GetAll(accountID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	if len(res) == 0 {
+		context.Status(http.StatusNoContent)
+		return
+	}
+	context.JSON(http.StatusOK, res)
+}
