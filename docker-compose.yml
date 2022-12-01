@@ -9,7 +9,13 @@ services:
       - "3306:3306"
     volumes:
       - ${HOME}/db/:/var/lib/mysql
+    networks:
+      - tr
     env_file: .env-db
     container_name: transaction-db-con
     hostname: db
     restart: on-failure
+
+networks:
+  tr:
+    driver: bridge
