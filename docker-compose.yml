@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  db:
+    build:
+      context: .
+      dockerfile: dockerfile-db
+    ports:
+      - "3306:3306"
+    volumes:
+      - ${HOME}/db/:/var/lib/mysql
+    env_file: .env-db
+    container_name: transaction-db-con
+    hostname: db
+    restart: on-failure

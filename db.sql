@@ -6,7 +6,7 @@ DROP TABLE IF EXISTS transaction_type;
 SET FOREIGN_KEY_CHECKS=1;
 
 CREATE TABLE account_transaction (
-    id_transaction VARCHAR(255)  NOT NULL PRIMARY KEY,
+    id_transaction VARCHAR(255) NOT NULL PRIMARY KEY,
     sender_id VARCHAR(255) NOT NULL,
     recipient_id VARCHAR(255) NOT NULL,
     amount DECIMAL(10, 2) NOT NULL,
