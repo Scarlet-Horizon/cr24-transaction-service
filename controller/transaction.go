@@ -70,6 +70,16 @@ func (receiver TransactionController) Create(context *gin.Context) {
 	context.JSON(http.StatusCreated, tr)
 }
 
+//	@description	Get all transactions for a specific account, where that account was sender.
+//	@summary		Get all transactions for a specific account, where that account was sender
+//	@accept			json
+//	@produce		json
+//	@tags			transaction
+//	@param			accountID	path		string				true	"Account ID"
+//	@success		200			{object}	[]model.Transaction	"An array of model.Transaction"
+//	@failure		400			{object}	response.ErrorResponse
+//	@failure		500			{object}	response.ErrorResponse
+//	@router			/transaction/{accountID} [GET]
 func (receiver TransactionController) GetAll(context *gin.Context) {
 	accountID := context.Param("accountID")
 
