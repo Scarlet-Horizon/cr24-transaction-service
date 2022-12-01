@@ -81,7 +81,7 @@ func main() {
 	{
 		api.POST("/transaction", transactionController.Create)
 		api.GET("/types", transactionController.GetTypes)
-		api.GET("/transaction/:accountID", transactionController.GetAll)
+		api.GET("/transaction/:accountID/:type", transactionController.GetAll)
 	}
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 

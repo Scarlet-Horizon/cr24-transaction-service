@@ -28,8 +28,15 @@ func (receiver TransactionDB) Create(transaction model.Transaction) error {
 	return err
 }
 
-func (receiver TransactionDB) GetAll(id string) ([]model.Transaction, error) {
-	stmt, err := receiver.DB.Prepare("SELECT * FROM account_transaction WHERE sender_id = ?;")
+func (receiver TransactionDB) GetAll(id, t string) ([]model.Transaction, error) {
+	var query string
+	if t == "sender" {
+		query = "SELECT * FROM account_transaction WHERE sender_id = ?;"
+	} else {
+		query = "SELECT * FROM account_transaction WHERE recipient_id = ?;"
+	}
+
+	stmt, err := receiver.DB.Prepare(query)
 	if err != nil {
 		return nil, err
 	}

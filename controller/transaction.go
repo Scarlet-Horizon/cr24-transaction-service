@@ -70,16 +70,17 @@ func (receiver TransactionController) Create(context *gin.Context) {
 	context.JSON(http.StatusCreated, tr)
 }
 
-//	@description	Get all transactions for a specific account, where that account was sender.
-//	@summary		Get all transactions for a specific account, where that account was sender
+//	@description	Get all transactions for a specific account, where that account was sender or recipient .
+//	@summary		Get all transactions for a specific account, where that account was sender or recipient
 //	@accept			json
 //	@produce		json
 //	@tags			transaction
 //	@param			accountID	path		string				true	"Account ID"
+//	@param			type		path		string				true	"Specifies type of returned transactions: ingoing or outgoing"
 //	@success		200			{object}	[]model.Transaction	"An array of model.Transaction"
 //	@failure		400			{object}	response.ErrorResponse
 //	@failure		500			{object}	response.ErrorResponse
-//	@router			/transaction/{accountID} [GET]
+//	@router			/transaction/{accountID}/{type} [GET]
 func (receiver TransactionController) GetAll(context *gin.Context) {
 	accountID := context.Param("accountID")
 
@@ -88,7 +89,13 @@ func (receiver TransactionController) GetAll(context *gin.Context) {
 		return
 	}
 
-	res, err := receiver.DB.GetAll(accountID)
+	t := context.Param("type")
+	if !(t == "sender" || t == "recipient") {
+		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: "invalid type, supported: 'sender', 'recipient'"})
+		return
+	}
+
+	res, err := receiver.DB.GetAll(accountID, t)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
 		return
