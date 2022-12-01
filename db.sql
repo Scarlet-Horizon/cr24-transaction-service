@@ -25,3 +25,5 @@ FOREIGN KEY (fk_t_type)
 REFERENCES transaction_type(id_transaction_type)
 ON UPDATE CASCADE
 ON DELETE CASCADE;
+
+INSERT INTO transaction_type (t_type) VALUES ("card-payment"), ("loan-payment"), ("transfer");

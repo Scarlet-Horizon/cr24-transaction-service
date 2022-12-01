@@ -1,6 +1,8 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 type Transaction struct {
 	// Transaction UUID
@@ -13,8 +15,8 @@ type Transaction struct {
 	Amount float64 `json:"amount" example:"17.24"`
 	// Transaction date
 	Date time.Time `json:"date" example:"2022-12-21T08:45:12+01:00"`
-	// Transaction type
-	Type TransactionType `json:"type"`
+	// Transaction type ID, check TransactionType
+	Type int `json:"type" example:"1"`
 } //@name Transaction
 
 type TransactionType struct {
