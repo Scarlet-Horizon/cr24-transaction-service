@@ -32,8 +32,10 @@ func (receiver TransactionDB) GetAll(id, t string) ([]model.Transaction, error) 
 	var query string
 	if t == "sender" {
 		query = "SELECT * FROM account_transaction WHERE sender_id = ?;"
-	} else {
+	} else if t == "recipient" {
 		query = "SELECT * FROM account_transaction WHERE recipient_id = ?;"
+	} else {
+		query = "SELECT * FROM account_transaction WHERE sender_id = ? OR recipient_id = ?;"
 	}
 
 	stmt, err := receiver.DB.Prepare(query)
@@ -46,7 +48,13 @@ func (receiver TransactionDB) GetAll(id, t string) ([]model.Transaction, error) 
 		}
 	}(stmt)
 
-	rows, err := stmt.Query(id)
+	var rows *sql.Rows
+	if t == "all" {
+		rows, err = stmt.Query(id, id)
+	} else {
+		rows, err = stmt.Query(id)
+	}
+
 	if err != nil {
 		return nil, err
 	}

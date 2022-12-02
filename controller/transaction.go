@@ -103,7 +103,7 @@ func (receiver TransactionController) Create(context *gin.Context) {
 //	@produce		json
 //	@tags			transaction
 //	@param			accountID	path		string				true	"Account ID"
-//	@param			type		path		string				true	"Specifies type of returned transactions: ingoing or outgoing"
+//	@param			type		path		string				true	"Specifies type of returned transactions: ingoing, outgoing or both. Supported values: 'sender', 'recipient', 'all'"
 //	@success		200			{object}	[]model.Transaction	"An array of model.Transaction"
 //	@failure		400			{object}	response.ErrorResponse
 //	@failure		500			{object}	response.ErrorResponse
@@ -117,8 +117,8 @@ func (receiver TransactionController) GetAll(context *gin.Context) {
 	}
 
 	t := context.Param("type")
-	if !(t == "sender" || t == "recipient") {
-		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: "invalid type, supported: 'sender', 'recipient'"})
+	if !(t == "sender" || t == "recipient" || t == "all") {
+		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: "invalid type, supported: 'sender', 'recipient', 'all'"})
 		return
 	}
 
