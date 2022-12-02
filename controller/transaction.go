@@ -133,3 +133,29 @@ func (receiver TransactionController) Delete(context *gin.Context) {
 	}
 	context.Status(http.StatusNoContent)
 }
+
+//	@description	Delete all transactions for the given sender.
+//	@summary		Delete all transactions for the given sender
+//	@accept			json
+//	@produce		json
+//	@tags			transaction
+//	@param			accountID	path	string	true	"Account ID"
+//	@success		204			"No Content"
+//	@failure		400			{object}	response.ErrorResponse
+//	@failure		500			{object}	response.ErrorResponse
+//	@router			/transactions/{accountID}/ [DELETE]
+func (receiver TransactionController) DeleteForAccount(context *gin.Context) {
+	accountID := context.Param("accountID")
+
+	if !util.IsValidUUID(accountID) {
+		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: "invalid accountID id"})
+		return
+	}
+
+	err := receiver.DB.DeleteForAccount(accountID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
+		return
+	}
+	context.Status(http.StatusNoContent)
+}

@@ -85,6 +85,7 @@ func main() {
 		api.GET("/transaction/:accountID/:type", transactionController.GetAll)
 
 		api.DELETE("/transaction/:transactionID", transactionController.Delete)
+		api.DELETE("/transactions/:accountID", transactionController.DeleteForAccount)
 	}
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 

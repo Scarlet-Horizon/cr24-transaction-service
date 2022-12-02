@@ -79,8 +79,8 @@ func (receiver TransactionDB) GetAll(id, t string) ([]model.Transaction, error) 
 	return types, nil
 }
 
-func (receiver TransactionDB) Delete(id string) error {
-	stmt, err := receiver.DB.Prepare("DELETE FROM account_transaction WHERE id_transaction = ?;")
+func (receiver TransactionDB) delete(id, query string) error {
+	stmt, err := receiver.DB.Prepare(query)
 	if err != nil {
 		return err
 	}
@@ -92,4 +92,12 @@ func (receiver TransactionDB) Delete(id string) error {
 
 	_, err = stmt.Exec(id)
 	return err
+}
+
+func (receiver TransactionDB) Delete(id string) error {
+	return receiver.delete(id, "DELETE FROM account_transaction WHERE id_transaction = ?;")
+}
+
+func (receiver TransactionDB) DeleteForAccount(id string) error {
+	return receiver.delete(id, "DELETE FROM account_transaction WHERE sender_id = ?;")
 }
