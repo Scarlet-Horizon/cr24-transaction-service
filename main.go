@@ -80,8 +80,11 @@ func main() {
 	api := router.Group("api/v1")
 	{
 		api.POST("/transaction", transactionController.Create)
+
 		api.GET("/types", transactionController.GetTypes)
 		api.GET("/transaction/:accountID/:type", transactionController.GetAll)
+
+		api.DELETE("/transaction/:transactionID", transactionController.Delete)
 	}
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 

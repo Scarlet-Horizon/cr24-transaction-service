@@ -78,3 +78,18 @@ func (receiver TransactionDB) GetAll(id, t string) ([]model.Transaction, error) 
 	}
 	return types, nil
 }
+
+func (receiver TransactionDB) Delete(id string) error {
+	stmt, err := receiver.DB.Prepare("DELETE FROM account_transaction WHERE id_transaction = ?;")
+	if err != nil {
+		return err
+	}
+	defer func(stmt *sql.Stmt) {
+		if err := stmt.Close(); err != nil {
+			log.Println("stmt.Close() error", err)
+		}
+	}(stmt)
+
+	_, err = stmt.Exec(id)
+	return err
+}

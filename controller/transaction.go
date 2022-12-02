@@ -70,7 +70,7 @@ func (receiver TransactionController) Create(context *gin.Context) {
 	context.JSON(http.StatusCreated, tr)
 }
 
-//	@description	Get all transactions for a specific account, where that account was sender or recipient .
+//	@description	Get all transactions for a specific account, where that account was sender or recipient.
 //	@summary		Get all transactions for a specific account, where that account was sender or recipient
 //	@accept			json
 //	@produce		json
@@ -106,4 +106,30 @@ func (receiver TransactionController) GetAll(context *gin.Context) {
 		return
 	}
 	context.JSON(http.StatusOK, res)
+}
+
+//	@description	Delete transaction.
+//	@summary		Delete transaction
+//	@accept			json
+//	@produce		json
+//	@tags			transaction
+//	@param			transactionID	path	string	true	"Transaction ID"
+//	@success		204				"No Content"
+//	@failure		400				{object}	response.ErrorResponse
+//	@failure		500				{object}	response.ErrorResponse
+//	@router			/transaction/{transactionID}/ [DELETE]
+func (receiver TransactionController) Delete(context *gin.Context) {
+	transactionID := context.Param("transactionID")
+
+	if !util.IsValidUUID(transactionID) {
+		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: "invalid transaction id"})
+		return
+	}
+
+	err := receiver.DB.Delete(transactionID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
+		return
+	}
+	context.Status(http.StatusNoContent)
 }
