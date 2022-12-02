@@ -33,17 +33,17 @@ func (receiver TransactionController) Create(context *gin.Context) {
 		return
 	}
 
-	if !util.IsValidUUID(req.SenderID) {
+	if !util.IsValidUUID(req.SenderAccountID) {
 		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: "invalid sender id"})
 		return
 	}
 
-	if !util.IsValidUUID(req.RecipientID) {
+	if !util.IsValidUUID(req.RecipientAccountID) {
 		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: "invalid recipient id"})
 		return
 	}
 
-	if req.SenderID == req.RecipientID {
+	if req.SenderAccountID == req.RecipientAccountID {
 		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: "can't transfer money to same accounts"})
 		return
 	}
@@ -53,16 +53,43 @@ func (receiver TransactionController) Create(context *gin.Context) {
 		return
 	}
 
+	acc, err := util.GetAccount(req.SenderID, req.SenderAccountID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	ok, err := util.ValidateAccount(acc)
+	if !ok {
+		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
+	}
+
+	if acc.Amount-req.Amount < float64(-1*acc.Limit) {
+		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: "insufficient funds"})
+		return
+	}
+
+	acc, err = util.GetAccount(req.RecipientID, req.RecipientAccountID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	ok, err = util.ValidateAccount(acc)
+	if !ok {
+		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
+	}
+
 	tr := model.Transaction{
 		ID:          uuid.NewString(),
-		SenderID:    req.SenderID,
-		RecipientID: req.RecipientID,
+		SenderID:    req.SenderAccountID,
+		RecipientID: req.RecipientAccountID,
 		Amount:      req.Amount,
 		Date:        time.Now(),
 		Type:        req.Type,
 	}
 
-	err := receiver.DB.Create(tr)
+	err = receiver.DB.Create(tr)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
 		return
