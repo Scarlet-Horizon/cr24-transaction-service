@@ -31,12 +31,13 @@ func (receiver TransactionDB) Create(transaction model.Transaction) error {
 func (receiver TransactionDB) GetAll(id, t string) ([]model.Transaction, error) {
 	var query string
 	if t == "sender" {
-		query = "SELECT * FROM account_transaction WHERE sender_id = ?;"
+		query = "SELECT * FROM account_transaction AS acT WHERE sender_id = ?"
 	} else if t == "recipient" {
-		query = "SELECT * FROM account_transaction WHERE recipient_id = ?;"
+		query = "SELECT * FROM account_transaction AS acT WHERE recipient_id = ?"
 	} else {
-		query = "SELECT * FROM account_transaction WHERE sender_id = ? OR recipient_id = ?;"
+		query = "SELECT * FROM account_transaction AS acT WHERE sender_id = ? OR recipient_id = ?"
 	}
+	query += " JOIN transaction_type AS tt ON acT.fk_t_type = tt.id_transaction_type;"
 
 	stmt, err := receiver.DB.Prepare(query)
 	if err != nil {
@@ -69,9 +70,10 @@ func (receiver TransactionDB) GetAll(id, t string) ([]model.Transaction, error) 
 	for rows.Next() {
 		var result model.Transaction
 		var tDate string
+		var tt model.TransactionType
 
 		if err := rows.Scan(&result.ID, &result.SenderID, &result.RecipientID, &result.Amount, &tDate,
-			&result.Type); err != nil {
+			&tt.ID, tt.Type); err != nil {
 			log.Println("rows.Scan() error", err)
 			continue
 		}

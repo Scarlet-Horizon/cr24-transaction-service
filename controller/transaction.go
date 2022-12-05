@@ -88,7 +88,10 @@ func (receiver TransactionController) Create(context *gin.Context) {
 		RecipientID: req.RecipientAccountID,
 		Amount:      req.Amount,
 		Date:        time.Now(),
-		Type:        req.Type,
+		Type: model.TransactionType{
+			ID:   req.Type,
+			Type: "",
+		},
 	}
 
 	err = receiver.DB.Create(tr)
@@ -107,8 +110,11 @@ func (receiver TransactionController) Create(context *gin.Context) {
 //	@param			accountID	path		string				true	"Account ID"
 //	@param			type		path		string				true	"Specifies type of returned transactions: ingoing, outgoing or both. Supported values: 'sender', 'recipient', 'all'"
 //	@success		200			{object}	[]model.Transaction	"An array of model.Transaction"
+//	@success		204			"No Content"
 //	@failure		400			{object}	response.ErrorResponse
 //	@failure		500			{object}	response.ErrorResponse
+//	@security		JWT
+//	@param			Authorization	header	string	true	"Authorization"
 //	@router			/transaction/{accountID}/{type} [GET]
 func (receiver TransactionController) GetAll(context *gin.Context) {
 	accountID := context.Param("accountID")
@@ -146,6 +152,8 @@ func (receiver TransactionController) GetAll(context *gin.Context) {
 //	@success		204				"No Content"
 //	@failure		400				{object}	response.ErrorResponse
 //	@failure		500				{object}	response.ErrorResponse
+//	@security		JWT
+//	@param			Authorization	header	string	true	"Authorization"
 //	@router			/transaction/{transactionID}/ [DELETE]
 func (receiver TransactionController) Delete(context *gin.Context) {
 	transactionID := context.Param("transactionID")
