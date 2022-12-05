@@ -29,15 +29,17 @@ func (receiver TransactionDB) Create(transaction model.Transaction) error {
 }
 
 func (receiver TransactionDB) GetAll(id, t string) ([]model.Transaction, error) {
-	var query string
+	query := "SELECT acT.*, tt.* FROM account_transaction AS acT JOIN transaction_type AS tt ON acT.fk_t_type = tt.id_transaction_type"
+
 	if t == "sender" {
-		query = "SELECT * FROM account_transaction AS acT WHERE sender_id = ?"
+		query += " WHERE sender_id = ?;"
 	} else if t == "recipient" {
-		query = "SELECT * FROM account_transaction AS acT WHERE recipient_id = ?"
+		query += " WHERE recipient_id = ?;"
 	} else {
-		query = "SELECT * FROM account_transaction AS acT WHERE sender_id = ? OR recipient_id = ?"
+		query += " WHERE sender_id = ? OR recipient_id = ?;"
 	}
-	query += " JOIN transaction_type AS tt ON acT.fk_t_type = tt.id_transaction_type;"
+
+	log.Println(query)
 
 	stmt, err := receiver.DB.Prepare(query)
 	if err != nil {

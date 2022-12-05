@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   api:
-#    image: davidslatinek/transaction-api:0.2
+#    image: davidslatinek/transaction-api:0.9
     build:
       context: .
       dockerfile: dockerfile-api

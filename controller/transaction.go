@@ -180,6 +180,8 @@ func (receiver TransactionController) Delete(context *gin.Context) {
 //	@success		204			"No Content"
 //	@failure		400			{object}	response.ErrorResponse
 //	@failure		500			{object}	response.ErrorResponse
+//	@security		JWT
+//	@param			Authorization	header	string	true	"Authorization"
 //	@router			/transactions/{accountID}/ [DELETE]
 func (receiver TransactionController) DeleteForAccount(context *gin.Context) {
 	accountID := context.Param("accountID")
