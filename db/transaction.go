@@ -24,7 +24,7 @@ func (receiver TransactionDB) Create(transaction model.Transaction) error {
 	}(stmt)
 
 	_, err = stmt.Exec(transaction.ID, transaction.SenderID, transaction.RecipientID, transaction.Amount,
-		transaction.GetDate(), transaction.Type)
+		transaction.GetDate(), transaction.Type.ID)
 	return err
 }
 
@@ -38,8 +38,6 @@ func (receiver TransactionDB) GetAll(id, t string) ([]model.Transaction, error) 
 	} else {
 		query += " WHERE sender_id = ? OR recipient_id = ?;"
 	}
-
-	log.Println(query)
 
 	stmt, err := receiver.DB.Prepare(query)
 	if err != nil {
@@ -75,7 +73,7 @@ func (receiver TransactionDB) GetAll(id, t string) ([]model.Transaction, error) 
 		var tt model.TransactionType
 
 		if err := rows.Scan(&result.ID, &result.SenderID, &result.RecipientID, &result.Amount, &tDate,
-			&tt.ID, tt.Type); err != nil {
+			&tt.ID, &tt.ID, &tt.Type); err != nil {
 			log.Println("rows.Scan() error", err)
 			continue
 		}
@@ -85,6 +83,8 @@ func (receiver TransactionDB) GetAll(id, t string) ([]model.Transaction, error) 
 			log.Println("time.Parse() error", err)
 			continue
 		}
+
+		result.Type = tt
 
 		types = append(types, result)
 	}

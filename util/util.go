@@ -22,19 +22,26 @@ func IsValidUUID(u string) bool {
 	return err == nil
 }
 
-func GetAccount(accountID string) (model.Account, error) {
+func GetAccount(accountID, token string) (model.Account, error) {
+	req, err := http.NewRequest(http.MethodGet, "http://account-api:8080/api/v1/account/"+accountID, nil)
+	if err != nil {
+		return model.Account{}, err
+	}
+
+	req.Header.Add("Authorization", "Bearer "+token)
+
 	client := http.Client{
 		Timeout: 5 * time.Second,
 	}
 
-	res, err := client.Get("http://account-api:8080/api/v1/account/" + accountID)
+	res, err := client.Do(req)
 	if err != nil {
-		return model.Account{}, errors.New("Get error: " + err.Error())
+		return model.Account{}, err
 	}
 
 	data, err := io.ReadAll(res.Body)
 	if err != nil {
-		return model.Account{}, errors.New("ReadAll error: " + err.Error())
+		return model.Account{}, err
 	}
 	defer func(body io.ReadCloser) {
 		if err := body.Close(); err != nil {
@@ -48,7 +55,7 @@ func GetAccount(accountID string) (model.Account, error) {
 
 	var acc model.Account
 	if err := json.Unmarshal(data, &acc); err != nil {
-		return model.Account{}, errors.New("encode data error: " + err.Error())
+		return model.Account{}, err
 	}
 	return acc, nil
 }
@@ -127,6 +134,7 @@ func ValidateToken(context *gin.Context) {
 		}
 
 		context.Set("ID", claims["sub"])
+		context.Set("token", token)
 		context.Next()
 		return
 	}

@@ -27,5 +27,5 @@ type TransactionType struct {
 	// TransactionType ID
 	ID int `json:"id" example:"1"`
 	// TransactionType description
-	Type string `json:"type" example:"card-payment"`
+	Type string `json:"type,omitempty" example:"card-payment"`
 } //@name TransactionType

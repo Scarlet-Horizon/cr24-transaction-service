@@ -55,7 +55,7 @@ func (receiver TransactionController) Create(context *gin.Context) {
 		return
 	}
 
-	acc, err := util.GetAccount(req.SenderAccountID)
+	acc, err := util.GetAccount(req.SenderAccountID, context.MustGet("token").(string))
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
 		return
@@ -69,17 +69,6 @@ func (receiver TransactionController) Create(context *gin.Context) {
 	if acc.Amount-req.Amount < float64(-1*acc.Limit) {
 		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: "insufficient funds"})
 		return
-	}
-
-	acc, err = util.GetAccount(req.RecipientAccountID)
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
-		return
-	}
-
-	ok, err = util.ValidateAccount(acc)
-	if !ok {
-		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
 	}
 
 	tr := model.Transaction{
