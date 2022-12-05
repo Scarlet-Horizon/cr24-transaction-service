@@ -8,11 +8,13 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	swaggerFiles "github.com/swaggo/files"
 	"github.com/swaggo/gin-swagger"
+	"io"
 	"log"
 	"main/controller"
 	"main/db"
 	_ "main/docs"
 	"main/env"
+	"main/util"
 	"net/http"
 	"os"
 	"os/signal"
@@ -34,6 +36,10 @@ import (
 
 //	@license.name	GNU General Public License v3.0
 //	@license.url	https://www.gnu.org/licenses/gpl-3.0.html
+
+//	@securityDefinitions.apikey	JWT
+//@in header
+//@name Authorization
 
 //	@host		localhost:8085
 //	@BasePath	/api/v1
@@ -76,8 +82,17 @@ func main() {
 
 	gin.SetMode(os.Getenv("GIN_MODE"))
 
+	if gin.Mode() == gin.ReleaseMode {
+		gin.DisableConsoleColor()
+
+		f, err := os.Create("gin.log")
+		if err != nil {
+			gin.DefaultWriter = io.MultiWriter(f)
+		}
+	}
+
 	router := gin.Default()
-	api := router.Group("api/v1")
+	api := router.Group("api/v1").Use(util.ValidateToken)
 	{
 		api.POST("/transaction", transactionController.Create)
 

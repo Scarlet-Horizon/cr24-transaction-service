@@ -25,6 +25,8 @@ type TransactionController struct {
 //	@success		201			{object}	model.Transaction
 //	@failure		400			{object}	response.ErrorResponse
 //	@failure		500			{object}	response.ErrorResponse
+//	@security		JWT
+//	@param			Authorization	header	string	true	"Authorization"
 //	@router			/transaction [POST]
 func (receiver TransactionController) Create(context *gin.Context) {
 	var req request.TransactionRequest
@@ -48,12 +50,12 @@ func (receiver TransactionController) Create(context *gin.Context) {
 		return
 	}
 
-	if req.Amount >= 0 && req.Amount < 1 || req.Amount <= 0 && req.Amount > -1 {
-		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: "invalid amount, minimum is 1 or -1"})
+	if req.Amount < 1 {
+		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: "invalid amount, minimum is 1"})
 		return
 	}
 
-	acc, err := util.GetAccount(req.SenderID, req.SenderAccountID)
+	acc, err := util.GetAccount(req.SenderAccountID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
 		return
@@ -69,7 +71,7 @@ func (receiver TransactionController) Create(context *gin.Context) {
 		return
 	}
 
-	acc, err = util.GetAccount(req.RecipientID, req.RecipientAccountID)
+	acc, err = util.GetAccount(req.RecipientAccountID)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
 		return
