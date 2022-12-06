@@ -1,6 +1,6 @@
 .idea
 go.mod
 go.sum
-.env-db
+db-files/.env-db
 docs
 model/account.go

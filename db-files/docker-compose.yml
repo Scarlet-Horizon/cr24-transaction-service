@@ -1,0 +1,23 @@
+version: "3.9"
+
+services:
+  db:
+#    image: davislatinek/transaction-api:0.8
+    build:
+      context: .
+      dockerfile: dockerfile-db
+    ports:
+      - "5000:3306"
+    volumes:
+      - ${HOME}/transaction-db/:/var/lib/mysql
+    networks:
+      - sipia_rv1_4
+    env_file: .env-db
+    container_name: transaction-db-con
+    hostname: transaction-db
+    restart: on-failure
+
+networks:
+  sipia_rv1_4:
+    name: sipia_rv1_4
+    driver: bridge
