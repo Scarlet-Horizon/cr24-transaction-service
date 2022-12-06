@@ -92,6 +92,7 @@ func main() {
 	}
 
 	router := gin.Default()
+	router.Use(util.CORSMiddleware)
 	api := router.Group("api/v1").Use(util.ValidateToken)
 	{
 		api.POST("/transaction", transactionController.Create)
