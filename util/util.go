@@ -141,10 +141,16 @@ func ValidateToken(context *gin.Context) {
 	context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: "invalid token"})
 }
 
-func CORSMiddleware(context *gin.Context) {
-	context.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-	//context.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-	//context.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-	//context.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, DELETE, PATCH")
+func CORS(context *gin.Context) {
+	context.Header("Access-Control-Allow-Origin", "*")
+	context.Header("Access-Control-Allow-Credentials", "true")
+	context.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, Authorization, Origin, Accept, Cache-Control")
+	context.Header("Access-Control-Allow-Methods", "OPTIONS, POST, GET, PATCH, DELETE")
+	context.Header("Access-Control-Max-Age", "86400")
+
+	if context.Request.Method == http.MethodOptions {
+		context.AbortWithStatus(http.StatusOK)
+		return
+	}
 	context.Next()
 }
