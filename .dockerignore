@@ -1,7 +1,8 @@
-.env-db-example
 .git
 .gitignore
 .idea
 LICENSE
 README.md
+db-files
+docker-hub.sh
 er
