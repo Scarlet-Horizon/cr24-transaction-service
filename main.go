@@ -8,12 +8,12 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	swaggerFiles "github.com/swaggo/files"
 	"github.com/swaggo/gin-swagger"
-	"io"
 	"log"
 	"main/controller"
 	"main/db"
 	_ "main/docs"
 	"main/env"
+	"main/messaging"
 	"main/util"
 	"net/http"
 	"os"
@@ -82,16 +82,17 @@ func main() {
 
 	gin.SetMode(os.Getenv("GIN_MODE"))
 
-	if gin.Mode() == gin.ReleaseMode {
-		gin.DisableConsoleColor()
+	router := gin.Default()
 
-		f, err := os.Create("gin.log")
-		if err != nil {
-			gin.DefaultWriter = io.MultiWriter(f)
-		}
+	msg := messaging.Messaging{}
+	err = msg.Init()
+	if err != nil {
+		log.Printf("error with messaging: %s\n", err)
+	} else {
+		router.Use(msg.WriteInfo).Use(msg.WriteError)
+		defer msg.Close()
 	}
 
-	router := gin.Default()
 	router.Use(util.CORS)
 	api := router.Group("api/v1").Use(util.ValidateToken)
 	{
@@ -132,5 +133,4 @@ func main() {
 	}
 
 	log.Println("shutting down")
-	os.Exit(0)
 }
