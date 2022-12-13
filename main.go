@@ -59,7 +59,10 @@ func main() {
 		log.Fatalf("error with sql.Open: %v", err)
 	}
 
-	err = mysqlDB.Ping()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	err = mysqlDB.PingContext(ctx)
 	if err != nil {
 		log.Fatalf("ping error: %v", err)
 	}
@@ -125,7 +128,7 @@ func main() {
 	signal.Notify(c, os.Interrupt, os.Kill, syscall.SIGTERM)
 	<-c
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
