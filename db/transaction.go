@@ -2,7 +2,9 @@ package db
 
 import (
 	"database/sql"
-	"log"
+	"errors"
+	"fmt"
+	"github.com/gin-gonic/gin"
 	"main/model"
 	"time"
 )
@@ -11,7 +13,7 @@ type TransactionDB struct {
 	DB *sql.DB
 }
 
-func (receiver TransactionDB) Create(transaction model.Transaction) error {
+func (receiver TransactionDB) Create(transaction model.Transaction, ctx *gin.Context) error {
 	stmt, err := receiver.DB.Prepare("INSERT INTO account_transaction (id_transaction, sender_id, recipient_id, " +
 		"amount, t_date, fk_t_type) VALUES (?,?,?,?,?,?);")
 	if err != nil {
@@ -19,7 +21,7 @@ func (receiver TransactionDB) Create(transaction model.Transaction) error {
 	}
 	defer func(stmt *sql.Stmt) {
 		if err := stmt.Close(); err != nil {
-			log.Println("stmt.Close() error", err)
+			_ = ctx.Error(errors.New(fmt.Sprintf("stmt.Close() error: %v", err)))
 		}
 	}(stmt)
 
@@ -28,7 +30,7 @@ func (receiver TransactionDB) Create(transaction model.Transaction) error {
 	return err
 }
 
-func (receiver TransactionDB) GetAll(id, t string) ([]model.Transaction, error) {
+func (receiver TransactionDB) GetAll(id, t string, ctx *gin.Context) ([]model.Transaction, error) {
 	query := "SELECT acT.*, tt.* FROM account_transaction AS acT JOIN transaction_type AS tt ON acT.fk_t_type = tt.id_transaction_type"
 
 	if t == "sender" {
@@ -45,7 +47,7 @@ func (receiver TransactionDB) GetAll(id, t string) ([]model.Transaction, error) 
 	}
 	defer func(stmt *sql.Stmt) {
 		if err := stmt.Close(); err != nil {
-			log.Println("stmt.Close() error", err)
+			_ = ctx.Error(errors.New(fmt.Sprintf("stmt.Close() error: %v", err)))
 		}
 	}(stmt)
 
@@ -61,7 +63,7 @@ func (receiver TransactionDB) GetAll(id, t string) ([]model.Transaction, error) 
 	}
 	defer func(rows *sql.Rows) {
 		if err := rows.Close(); err != nil {
-			log.Println("rows.Close() error", err)
+			_ = ctx.Error(errors.New(fmt.Sprintf("rows.Close() error: %v", err)))
 		}
 	}(rows)
 
@@ -74,13 +76,13 @@ func (receiver TransactionDB) GetAll(id, t string) ([]model.Transaction, error) 
 
 		if err := rows.Scan(&result.ID, &result.SenderID, &result.RecipientID, &result.Amount, &tDate,
 			&tt.ID, &tt.ID, &tt.Type); err != nil {
-			log.Println("rows.Scan() error", err)
+			_ = ctx.Error(errors.New(fmt.Sprintf("rows.Scan() error: %v", err)))
 			continue
 		}
 
 		result.Date, err = time.Parse("2006-01-02 15:04:05", tDate)
 		if err != nil {
-			log.Println("time.Parse() error", err)
+			_ = ctx.Error(errors.New(fmt.Sprintf("time.Parse() error: %v", err)))
 			continue
 		}
 
@@ -88,17 +90,20 @@ func (receiver TransactionDB) GetAll(id, t string) ([]model.Transaction, error) 
 
 		types = append(types, result)
 	}
+	if err := rows.Err(); err != nil {
+		_ = ctx.Error(errors.New(fmt.Sprintf("rows.Err() error: %v", err)))
+	}
 	return types, nil
 }
 
-func (receiver TransactionDB) delete(id, query string) error {
+func (receiver TransactionDB) delete(id, query string, ctx *gin.Context) error {
 	stmt, err := receiver.DB.Prepare(query)
 	if err != nil {
 		return err
 	}
 	defer func(stmt *sql.Stmt) {
 		if err := stmt.Close(); err != nil {
-			log.Println("stmt.Close() error", err)
+			_ = ctx.Error(errors.New(fmt.Sprintf("stmt.Close() error: %v", err)))
 		}
 	}(stmt)
 
@@ -106,10 +111,10 @@ func (receiver TransactionDB) delete(id, query string) error {
 	return err
 }
 
-func (receiver TransactionDB) Delete(id string) error {
-	return receiver.delete(id, "DELETE FROM account_transaction WHERE id_transaction = ?;")
+func (receiver TransactionDB) Delete(id string, ctx *gin.Context) error {
+	return receiver.delete(id, "DELETE FROM account_transaction WHERE id_transaction = ?;", ctx)
 }
 
-func (receiver TransactionDB) DeleteForAccount(id string) error {
-	return receiver.delete(id, "DELETE FROM account_transaction WHERE sender_id = ?;")
+func (receiver TransactionDB) DeleteForAccount(id string, ctx *gin.Context) error {
+	return receiver.delete(id, "DELETE FROM account_transaction WHERE sender_id = ?;", ctx)
 }

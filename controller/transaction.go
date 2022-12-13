@@ -29,54 +29,54 @@ type TransactionController struct {
 //	@security		JWT
 //	@param			Authorization	header	string	true	"Authorization"
 //	@router			/transaction [POST]
-func (receiver TransactionController) Create(context *gin.Context) {
+func (receiver TransactionController) Create(ctx *gin.Context) {
 	var req request.TransactionRequest
-	if err := context.ShouldBindJSON(&req); err != nil {
-		_ = context.Error(err)
-		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		_ = ctx.Error(err)
+		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
 		return
 	}
 
 	if !util.IsValidUUID(req.SenderAccountID) {
-		err := context.Error(errors.New("invalid sender id"))
-		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
+		err := ctx.Error(errors.New("invalid sender id"))
+		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
 		return
 	}
 
 	if !util.IsValidUUID(req.RecipientAccountID) {
-		err := context.Error(errors.New("invalid recipient id"))
-		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
+		err := ctx.Error(errors.New("invalid recipient id"))
+		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
 		return
 	}
 
 	if req.SenderAccountID == req.RecipientAccountID {
-		err := context.Error(errors.New("can't transfer money to same accounts"))
-		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
+		err := ctx.Error(errors.New("can't transfer money to same accounts"))
+		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
 		return
 	}
 
 	if req.Amount < 1 {
-		err := context.Error(errors.New("invalid amount, minimum is 1"))
-		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
+		err := ctx.Error(errors.New("invalid amount, minimum is 1"))
+		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	acc, err := util.GetAccount(req.SenderAccountID, context.MustGet("token").(string))
+	acc, err := util.GetAccount(req.SenderAccountID, ctx.MustGet("token").(string))
 	if err != nil {
-		_ = context.Error(err)
-		context.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
+		_ = ctx.Error(err)
+		ctx.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
 		return
 	}
 
 	ok, err := util.ValidateAccount(acc)
 	if !ok {
-		_ = context.Error(err)
-		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
+		_ = ctx.Error(err)
+		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
 	}
 
 	if acc.Amount-req.Amount < float64(-1*acc.Limit) {
-		err := context.Error(errors.New("insufficient funds"))
-		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
+		err := ctx.Error(errors.New("insufficient funds"))
+		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
 		return
 	}
 
@@ -92,13 +92,13 @@ func (receiver TransactionController) Create(context *gin.Context) {
 		},
 	}
 
-	err = receiver.DB.Create(tr)
+	err = receiver.DB.Create(tr, ctx)
 	if err != nil {
-		_ = context.Error(err)
-		context.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
+		_ = ctx.Error(err)
+		ctx.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
 		return
 	}
-	context.JSON(http.StatusCreated, tr)
+	ctx.JSON(http.StatusCreated, tr)
 }
 
 //	@description	Get all transactions for a specific account, where that account was sender or recipient.
@@ -115,34 +115,34 @@ func (receiver TransactionController) Create(context *gin.Context) {
 //	@security		JWT
 //	@param			Authorization	header	string	true	"Authorization"
 //	@router			/transaction/{accountID}/{type} [GET]
-func (receiver TransactionController) GetAll(context *gin.Context) {
-	accountID := context.Param("accountID")
+func (receiver TransactionController) GetAll(ctx *gin.Context) {
+	accountID := ctx.Param("accountID")
 
 	if !util.IsValidUUID(accountID) {
-		err := context.Error(errors.New("invalid account id"))
-		context.JSON(http.StatusBadRequest, err.Error())
+		err := ctx.Error(errors.New("invalid account id"))
+		ctx.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
-	t := context.Param("type")
+	t := ctx.Param("type")
 	if !(t == "sender" || t == "recipient" || t == "all") {
-		err := context.Error(errors.New("invalid type, supported: 'sender', 'recipient', 'all'"))
-		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
+		err := ctx.Error(errors.New("invalid type, supported: 'sender', 'recipient', 'all'"))
+		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	res, err := receiver.DB.GetAll(accountID, t)
+	res, err := receiver.DB.GetAll(accountID, t, ctx)
 	if err != nil {
-		_ = context.Error(err)
-		context.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
+		_ = ctx.Error(err)
+		ctx.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
 		return
 	}
 
 	if len(res) == 0 {
-		context.Status(http.StatusNoContent)
+		ctx.Status(http.StatusNoContent)
 		return
 	}
-	context.JSON(http.StatusOK, res)
+	ctx.JSON(http.StatusOK, res)
 }
 
 //	@description	Delete transaction.
@@ -157,22 +157,22 @@ func (receiver TransactionController) GetAll(context *gin.Context) {
 //	@security		JWT
 //	@param			Authorization	header	string	true	"Authorization"
 //	@router			/transaction/{transactionID}/ [DELETE]
-func (receiver TransactionController) Delete(context *gin.Context) {
-	transactionID := context.Param("transactionID")
+func (receiver TransactionController) Delete(ctx *gin.Context) {
+	transactionID := ctx.Param("transactionID")
 
 	if !util.IsValidUUID(transactionID) {
-		err := context.Error(errors.New("invalid transaction id"))
-		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
+		err := ctx.Error(errors.New("invalid transaction id"))
+		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	err := receiver.DB.Delete(transactionID)
+	err := receiver.DB.Delete(transactionID, ctx)
 	if err != nil {
-		_ = context.Error(err)
-		context.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
+		_ = ctx.Error(err)
+		ctx.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
 		return
 	}
-	context.Status(http.StatusNoContent)
+	ctx.Status(http.StatusNoContent)
 }
 
 //	@description	Delete all transactions for the given sender.
@@ -187,20 +187,20 @@ func (receiver TransactionController) Delete(context *gin.Context) {
 //	@security		JWT
 //	@param			Authorization	header	string	true	"Authorization"
 //	@router			/transactions/{accountID}/ [DELETE]
-func (receiver TransactionController) DeleteForAccount(context *gin.Context) {
-	accountID := context.Param("accountID")
+func (receiver TransactionController) DeleteForAccount(ctx *gin.Context) {
+	accountID := ctx.Param("accountID")
 
 	if !util.IsValidUUID(accountID) {
-		err := context.Error(errors.New("invalid account id"))
-		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
+		err := ctx.Error(errors.New("invalid account id"))
+		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	err := receiver.DB.DeleteForAccount(accountID)
+	err := receiver.DB.DeleteForAccount(accountID, ctx)
 	if err != nil {
-		_ = context.Error(err)
-		context.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
+		_ = ctx.Error(err)
+		ctx.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
 		return
 	}
-	context.Status(http.StatusNoContent)
+	ctx.Status(http.StatusNoContent)
 }

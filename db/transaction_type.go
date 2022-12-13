@@ -2,18 +2,20 @@ package db
 
 import (
 	"database/sql"
-	"log"
+	"errors"
+	"fmt"
+	"github.com/gin-gonic/gin"
 	"main/model"
 )
 
-func (receiver TransactionDB) GetTypes() ([]model.TransactionType, error) {
+func (receiver TransactionDB) GetTypes(ctx *gin.Context) ([]model.TransactionType, error) {
 	stmt, err := receiver.DB.Prepare("SELECT * FROM transaction_type;")
 	if err != nil {
 		return nil, err
 	}
 	defer func(stmt *sql.Stmt) {
 		if err := stmt.Close(); err != nil {
-			log.Println("stmt.Close() error", err)
+			_ = ctx.Error(errors.New(fmt.Sprintf("stmt.Close() error: %v", err)))
 		}
 	}(stmt)
 
@@ -23,7 +25,7 @@ func (receiver TransactionDB) GetTypes() ([]model.TransactionType, error) {
 	}
 	defer func(rows *sql.Rows) {
 		if err := rows.Close(); err != nil {
-			log.Println("rows.Close() error", err)
+			_ = ctx.Error(errors.New(fmt.Sprintf("rows.Close() error: %v", err)))
 		}
 	}(rows)
 
@@ -32,13 +34,13 @@ func (receiver TransactionDB) GetTypes() ([]model.TransactionType, error) {
 	for rows.Next() {
 		var result model.TransactionType
 		if err := rows.Scan(&result.ID, &result.Type); err != nil {
-			log.Println("rows.Scan() error", err)
+			_ = ctx.Error(errors.New(fmt.Sprintf("rows.Scan() error: %v", err)))
 			continue
 		}
 		types = append(types, result)
 	}
 	if err := rows.Err(); err != nil {
-		log.Println("rows.Err() error", err)
+		_ = ctx.Error(errors.New(fmt.Sprintf("rows.Err() error: %v", err)))
 	}
 
 	return types, nil

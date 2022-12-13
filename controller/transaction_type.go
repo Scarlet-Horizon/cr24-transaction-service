@@ -15,12 +15,12 @@ import (
 //	@success		200	{object}	[]model.TransactionType	"An array of TransactionType"
 //	@failure		500	{object}	response.ErrorResponse
 //	@router			/types [GET]
-func (receiver TransactionController) GetTypes(context *gin.Context) {
-	types, err := receiver.DB.GetTypes()
+func (receiver TransactionController) GetTypes(ctx *gin.Context) {
+	types, err := receiver.DB.GetTypes(ctx)
 	if err != nil {
-		_ = context.Error(err)
-		context.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
+		_ = ctx.Error(err)
+		ctx.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
 		return
 	}
-	context.JSON(http.StatusOK, types)
+	ctx.JSON(http.StatusOK, types)
 }
