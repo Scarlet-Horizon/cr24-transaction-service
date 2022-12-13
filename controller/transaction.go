@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"main/db"
@@ -31,43 +32,51 @@ type TransactionController struct {
 func (receiver TransactionController) Create(context *gin.Context) {
 	var req request.TransactionRequest
 	if err := context.ShouldBindJSON(&req); err != nil {
+		_ = context.Error(err)
 		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
 		return
 	}
 
 	if !util.IsValidUUID(req.SenderAccountID) {
-		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: "invalid sender id"})
+		err := context.Error(errors.New("invalid sender id"))
+		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
 		return
 	}
 
 	if !util.IsValidUUID(req.RecipientAccountID) {
-		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: "invalid recipient id"})
+		err := context.Error(errors.New("invalid recipient id"))
+		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
 		return
 	}
 
 	if req.SenderAccountID == req.RecipientAccountID {
-		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: "can't transfer money to same accounts"})
+		err := context.Error(errors.New("can't transfer money to same accounts"))
+		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
 		return
 	}
 
 	if req.Amount < 1 {
-		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: "invalid amount, minimum is 1"})
+		err := context.Error(errors.New("invalid amount, minimum is 1"))
+		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
 		return
 	}
 
 	acc, err := util.GetAccount(req.SenderAccountID, context.MustGet("token").(string))
 	if err != nil {
+		_ = context.Error(err)
 		context.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
 		return
 	}
 
 	ok, err := util.ValidateAccount(acc)
 	if !ok {
+		_ = context.Error(err)
 		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
 	}
 
 	if acc.Amount-req.Amount < float64(-1*acc.Limit) {
-		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: "insufficient funds"})
+		err := context.Error(errors.New("insufficient funds"))
+		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
 		return
 	}
 
@@ -85,6 +94,7 @@ func (receiver TransactionController) Create(context *gin.Context) {
 
 	err = receiver.DB.Create(tr)
 	if err != nil {
+		_ = context.Error(err)
 		context.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
 		return
 	}
@@ -109,18 +119,21 @@ func (receiver TransactionController) GetAll(context *gin.Context) {
 	accountID := context.Param("accountID")
 
 	if !util.IsValidUUID(accountID) {
-		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: "invalid account id"})
+		err := context.Error(errors.New("invalid account id"))
+		context.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
 	t := context.Param("type")
 	if !(t == "sender" || t == "recipient" || t == "all") {
-		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: "invalid type, supported: 'sender', 'recipient', 'all'"})
+		err := context.Error(errors.New("invalid type, supported: 'sender', 'recipient', 'all'"))
+		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
 		return
 	}
 
 	res, err := receiver.DB.GetAll(accountID, t)
 	if err != nil {
+		_ = context.Error(err)
 		context.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
 		return
 	}
@@ -148,12 +161,14 @@ func (receiver TransactionController) Delete(context *gin.Context) {
 	transactionID := context.Param("transactionID")
 
 	if !util.IsValidUUID(transactionID) {
-		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: "invalid transaction id"})
+		err := context.Error(errors.New("invalid transaction id"))
+		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
 		return
 	}
 
 	err := receiver.DB.Delete(transactionID)
 	if err != nil {
+		_ = context.Error(err)
 		context.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
 		return
 	}
@@ -176,12 +191,14 @@ func (receiver TransactionController) DeleteForAccount(context *gin.Context) {
 	accountID := context.Param("accountID")
 
 	if !util.IsValidUUID(accountID) {
-		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: "invalid accountID id"})
+		err := context.Error(errors.New("invalid account id"))
+		context.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
 		return
 	}
 
 	err := receiver.DB.DeleteForAccount(accountID)
 	if err != nil {
+		_ = context.Error(err)
 		context.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
 		return
 	}

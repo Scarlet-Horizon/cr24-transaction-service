@@ -18,6 +18,7 @@ import (
 func (receiver TransactionController) GetTypes(context *gin.Context) {
 	types, err := receiver.DB.GetTypes()
 	if err != nil {
+		_ = context.Error(err)
 		context.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
 		return
 	}
