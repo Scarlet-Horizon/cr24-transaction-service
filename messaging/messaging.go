@@ -30,7 +30,7 @@ func (receiver *Messaging) Init() error {
 	receiver.channel = ch
 
 	q, err := ch.QueueDeclare(
-		"account-service",
+		"transaction-service",
 		true,
 		false,
 		false,
@@ -64,7 +64,7 @@ func (receiver *Messaging) write(message string) error {
 	defer cancel()
 
 	return receiver.channel.PublishWithContext(ctx,
-		"",
+		"SIPIA-4",
 		receiver.queue.Name,
 		false,
 		false,
