@@ -2,7 +2,6 @@ version: "3.9"
 
 services:
   api:
-#    image: davidslatinek/transaction-api:0.9
     build:
       context: .
       dockerfile: dockerfile-api
@@ -13,6 +12,10 @@ services:
     container_name: transaction-api-con
     hostname: transaction-api
     restart: on-failure
+    deploy:
+      resources:
+        limits:
+          memory: 50M
 
 networks:
   sipia_rv1_4:
