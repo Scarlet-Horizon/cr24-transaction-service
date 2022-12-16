@@ -15,6 +15,10 @@ services:
     container_name: transaction-db-con
     hostname: transaction-db
     restart: on-failure
+    deploy:
+      resources:
+        limits:
+          memory: 220M
 
 networks:
   sipia_rv1_4:
