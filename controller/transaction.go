@@ -61,7 +61,8 @@ func (receiver TransactionController) Create(ctx *gin.Context) {
 		return
 	}
 
-	acc, err := util.GetAccount(req.SenderAccountID, ctx.MustGet("token").(string))
+	acc, err := util.GetAccount(req.SenderAccountID, ctx.MustGet("token").(string),
+		ctx.MustGet("Correlation").(string))
 	if err != nil {
 		_ = ctx.Error(err)
 		ctx.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})

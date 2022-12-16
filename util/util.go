@@ -22,13 +22,14 @@ func IsValidUUID(u string) bool {
 	return err == nil
 }
 
-func GetAccount(accountID, token string) (model.Account, error) {
+func GetAccount(accountID, token, correlation string) (model.Account, error) {
 	req, err := http.NewRequest(http.MethodGet, "http://account-api:8080/api/v1/account/"+accountID, nil)
 	if err != nil {
 		return model.Account{}, err
 	}
 
 	req.Header.Add("Authorization", "Bearer "+token)
+	req.Header.Add("Correlation", correlation)
 
 	client := http.Client{
 		Timeout: 5 * time.Second,
