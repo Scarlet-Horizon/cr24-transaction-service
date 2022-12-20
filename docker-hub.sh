@@ -10,6 +10,6 @@ if ! [[ $1 =~ ^[+-]?[0-9]+\.?[0-9]*$ ]]; then
   exit 1
 fi
 
-docker compose build
-docker tag cr24-transaction-service-api:latest davidslatinek/transaction-api:"$1"
+docker build -f dockerfile-api --tag davidslatinek/transaction-api:"$1" .
+docker tag davidslatinek/transaction-api:"$1" davidslatinek/transaction-api:"$1"
 docker push davidslatinek/transaction-api:"$1"
