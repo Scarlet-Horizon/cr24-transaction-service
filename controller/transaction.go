@@ -49,12 +49,6 @@ func (receiver TransactionController) Create(ctx *gin.Context) {
 		return
 	}
 
-	if req.SenderAccountID == req.RecipientAccountID {
-		err := ctx.Error(errors.New("can't transfer money to same accounts"))
-		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
-		return
-	}
-
 	if req.Amount < 1 {
 		err := ctx.Error(errors.New("invalid amount, minimum is 1"))
 		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
@@ -62,7 +56,7 @@ func (receiver TransactionController) Create(ctx *gin.Context) {
 	}
 
 	acc, err := util.GetAccount(req.SenderAccountID, ctx.MustGet("token").(string),
-		ctx.MustGet("Correlation").(string))
+		ctx.GetString("Correlation"))
 	if err != nil {
 		_ = ctx.Error(err)
 		ctx.JSON(http.StatusInternalServerError, response.ErrorResponse{Error: err.Error()})
@@ -121,7 +115,7 @@ func (receiver TransactionController) GetAll(ctx *gin.Context) {
 
 	if !util.IsValidUUID(accountID) {
 		err := ctx.Error(errors.New("invalid account id"))
-		ctx.JSON(http.StatusBadRequest, err.Error())
+		ctx.JSON(http.StatusBadRequest, response.ErrorResponse{Error: err.Error()})
 		return
 	}
 
